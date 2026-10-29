@@ -1,0 +1,1064 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ParishBook — Small Church Treasurer's Book</title>
+<style>
+  :root{
+    --ink:#22303a; --mut:#5d6d78; --line:#d8dee2; --bg:#f4f2ed; --card:#ffffff;
+    --accent:#5b4a8a; --accent2:#7a68a6; --good:#2e7d4f; --bad:#b03a2e; --warn:#a86a12;
+    --soft:#efeaf6; --soft2:#f7f4ee;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45}
+  header{background:var(--accent);color:#fff;padding:14px 18px 10px;position:sticky;top:0;z-index:20}
+  header h1{margin:0;font-size:21px;letter-spacing:.2px}
+  header .sub{opacity:.85;font-size:13px;margin-top:2px}
+  nav{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  nav button{background:rgba(255,255,255,.14);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:6px 13px;font-size:13.5px;cursor:pointer}
+  nav button.active{background:#fff;color:var(--accent);font-weight:700}
+  main{max-width:1060px;margin:0 auto;padding:16px 14px 60px}
+  section.tab{display:none}
+  section.tab.active{display:block}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+  .card h2{margin:0 0 10px;font-size:17px}
+  .card h3{margin:14px 0 8px;font-size:15px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+  .stat{background:var(--soft2);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .stat .k{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+  .stat .v{font-size:22px;font-weight:700;margin-top:2px}
+  .stat .s{font-size:12.5px;color:var(--mut)}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--mut)}
+  td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  tr.total td{font-weight:700;border-top:2px solid var(--ink);border-bottom:none}
+  label{display:block;font-size:13px;color:var(--mut);margin:8px 0 3px}
+  input,select,textarea{width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;font-size:15px;background:#fff;color:var(--ink)}
+  textarea{resize:vertical;min-height:54px}
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+  .btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:10px 16px;font-size:14.5px;cursor:pointer;font-weight:600}
+  .btn:hover{background:var(--accent2)}
+  .btn.ghost{background:#fff;color:var(--accent);border:1px solid var(--accent)}
+  .btn.small{padding:5px 10px;font-size:13px;border-radius:6px;min-height:40px;}
+  .btn.danger{background:#fff;color:var(--bad);border:1px solid var(--bad)}
+  .btnrow{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+  .pill{display:inline-block;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600}
+  .pill.flag{background:#fdeeda;color:var(--warn);border:1px solid #ecc27a}
+  .pill.off{background:#eee;color:var(--mut)}
+  .muted{color:var(--mut);font-size:13px}
+  .empty{padding:16px;text-align:center;color:var(--mut)}
+  .alert{background:#fdf3e3;border:1px solid #ecc27a;border-radius:8px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+  .ok{background:#e8f4ec;border:1px solid #9dc9ae;border-radius:8px;padding:10px 12px;font-size:14px;margin-bottom:12px}
+  .del{background:none;border:none;color:var(--bad);cursor:pointer;font-size:13px;padding:2px 4px}
+  .edit{background:none;border:none;color:var(--accent);cursor:pointer;font-size:13px;padding:2px 4px;font-weight:600}
+  .scroll{overflow-x:auto}
+  @media (max-width:640px){
+    table{font-size:13px} th,td{padding:6px 5px}
+    header h1{font-size:19px}
+  }
+  /* ---------- print ---------- */
+  #printArea{display:none}
+  @media print{
+    body{background:#fff}
+    header,main,.noprint{display:none !important}
+    #printArea{display:block;font-size:12.5px;color:#000}
+    .stmt{page-break-after:always;padding:10px 6px}
+    .stmt:last-child{page-break-after:auto}
+    .stmt h1{font-size:19px;margin:0 0 2px}
+    .stmt h2{font-size:14px;margin:16px 0 6px}
+    .stmt table{font-size:12px}
+    .stmt th,.stmt td{border-bottom:1px solid #bbb;padding:4px 6px}
+    .stmt .letterhead{border-bottom:3px double #444;padding-bottom:8px;margin-bottom:12px}
+    .stmt .foot{margin-top:16px;font-size:11.5px;color:#222}
+    .sumbox{border:1px solid #888;border-radius:6px;padding:10px 12px;margin:10px 0}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>⛪ ParishBook</h1>
+  <div class="sub" id="churchLine">Small Church Treasurer's Book — contributions, funds &amp; year-end giving statements</div>
+  <nav id="tabs">
+    <button data-tab="dash" class="active">Dashboard</button>
+    <button data-tab="giving">Giving</button>
+    <button data-tab="expenses">Expenses</button>
+    <button data-tab="members">Members</button>
+    <button data-tab="funds">Funds &amp; Budgets</button>
+    <button data-tab="attend">Attendance</button>
+    <button data-tab="reports">Reports &amp; Statements</button>
+    <button data-tab="settings">Settings &amp; Help</button>
+  </nav>
+</header>
+<main>
+  <!-- ================= DASHBOARD ================= -->
+  <section class="tab active" id="tab-dash">
+    <div id="ackAlert"></div>
+    <div class="grid" id="dashStats"></div>
+    <div class="card">
+      <h2>Fund balances</h2>
+      <div class="scroll"><table id="dashFunds"></table></div>
+      <p class="muted">Balance = contributions received − expenses paid, per fund, for the year selected in Reports (default: current year). Designated funds (building, missions…) are tracked separately so restricted money is never mixed into the general fund.</p>
+    </div>
+    <div class="card">
+      <h2>Recent contributions</h2>
+      <div class="scroll"><table id="dashRecent"></table></div>
+    </div>
+  </section>
+
+  <!-- ================= GIVING ================= -->
+  <section class="tab" id="tab-giving">
+    <div class="card">
+      <h2 id="giftFormTitle">Record a contribution</h2>
+      <div class="row">
+        <div><label>Date</label><input type="date" id="gDate"></div>
+        <div><label>Giver (member / household)</label><select id="gMember"></select></div>
+        <div><label>Fund</label><select id="gFund"></select></div>
+        <div><label>Type</label><select id="gKind"><option value="cash">Cash / check / online</option><option value="noncash">Non-cash gift (goods)</option></select></div>
+      </div>
+      <div class="row">
+        <div><label>Amount ($)</label><input inputmode="decimal" type="number" id="gAmount" min="0" step="0.01" placeholder="0.00"></div>
+        <div><label>Method</label><select id="gMethod"><option>Check</option><option>Cash</option><option>Online</option><option>Card</option><option>Other</option></select></div>
+        <div><label>Check # (optional)</label><input type="text" id="gCheck" placeholder=""></div>
+      </div>
+      <div id="gNoncashWrap" style="display:none"><label>Non-cash gift description (required for non-cash — the church describes it but does not assign it a value)</label><input type="text" id="gDesc" placeholder="e.g. Case of paper goods for the food pantry"></div>
+      <label>Note (optional)</label><input type="text" id="gNote" placeholder="">
+      <div class="btnrow">
+        <button class="btn" id="gSave">Save contribution</button>
+        <button class="btn ghost" id="gCancel" style="display:none">Cancel edit</button>
+      </div>
+      <p class="muted">Single gifts of <b>$250 or more</b> are flagged automatically — the IRS expects those to be covered by a written acknowledgment, which the year-end statement provides.</p>
+    </div>
+    <div class="card">
+      <h2>Contribution records</h2>
+      <div class="row">
+        <div><label>Year</label><select id="fYear"></select></div>
+        <div><label>Fund</label><select id="fFund"></select></div>
+        <div><label>Giver</label><select id="fMember"></select></div>
+        <div><label>Search text</label><input type="text" id="fText" placeholder="name, note, check #…"></div>
+      </div>
+      <div class="scroll" style="margin-top:10px"><table id="giftTable"></table></div>
+      <div id="giftTotals" style="margin-top:8px"></div>
+    </div>
+  </section>
+
+  <!-- ================= EXPENSES ================= -->
+  <section class="tab" id="tab-expenses">
+    <div class="card">
+      <h2 id="expFormTitle">Record an expense</h2>
+      <div class="row">
+        <div><label>Date</label><input type="date" id="eDate"></div>
+        <div><label>Fund</label><select id="eFund"></select></div>
+        <div><label>Category</label><select id="eCat"></select></div>
+        <div><label>Amount ($)</label><input inputmode="decimal" type="number" id="eAmount" min="0" step="0.01" placeholder="0.00"></div>
+      </div>
+      <div class="row">
+        <div><label>Paid to</label><input type="text" id="ePayee" placeholder="Vendor / person"></div>
+        <div><label>Note (optional)</label><input type="text" id="eNote" placeholder=""></div>
+      </div>
+      <div class="btnrow">
+        <button class="btn" id="eSave">Save expense</button>
+        <button class="btn ghost" id="eCancel" style="display:none">Cancel edit</button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Expense records</h2>
+      <div class="row">
+        <div><label>Year</label><select id="efYear"></select></div>
+        <div><label>Fund</label><select id="efFund"></select></div>
+      </div>
+      <div class="scroll" style="margin-top:10px"><table id="expTable"></table></div>
+      <div id="expTotals" style="margin-top:8px"></div>
+    </div>
+  </section>
+
+  <!-- ================= MEMBERS ================= -->
+  <section class="tab" id="tab-members">
+    <div class="card">
+      <h2 id="memFormTitle">Add a member / household</h2>
+      <div class="row">
+        <div><label>Name (household)</label><input type="text" id="mName" placeholder="e.g. James &amp; Mary Carter"></div>
+        <div><label>Envelope # (optional)</label><input type="text" id="mEnv" placeholder=""></div>
+        <div><label>Member since (year, optional)</label><input inputmode="decimal" type="number" id="mSince" placeholder="2024"></div>
+      </div>
+      <div class="row">
+        <div><label>Mailing address</label><input type="text" id="mAddr" placeholder="Street, City, ST ZIP"></div>
+        <div><label>Email</label><input type="text" id="mEmail" placeholder=""></div>
+        <div><label>Phone</label><input type="text" id="mPhone" placeholder=""></div>
+      </div>
+      <label>Notes (optional)</label><input type="text" id="mNotes" placeholder="">
+      <div class="btnrow">
+        <button class="btn" id="mSave">Save member</button>
+        <button class="btn ghost" id="mCancel" style="display:none">Cancel edit</button>
+      </div>
+      <p class="muted">The address is what prints on the year-end giving statement — keep it current. “Anonymous / Loose Cash” is a built-in giver for plate cash; it never gets a statement.</p>
+    </div>
+    <div class="card">
+      <h2>Directory</h2>
+      <div class="scroll"><table id="memTable"></table></div>
+    </div>
+  </section>
+
+  <!-- ================= FUNDS ================= -->
+  <section class="tab" id="tab-funds">
+    <div class="card">
+      <h2>Funds</h2>
+      <div class="scroll"><table id="fundTable"></table></div>
+      <h3>Add a fund</h3>
+      <div class="row">
+        <div><label>Fund name</label><input type="text" id="fdName" placeholder="e.g. Youth Fund"></div>
+        <div><label>Type</label><select id="fdKind"><option value="general">General / operating</option><option value="designated">Designated (restricted purpose)</option></select></div>
+      </div>
+      <div class="btnrow"><button class="btn" id="fdSave">Add fund</button></div>
+      <p class="muted">A fund with records can't be deleted (that would orphan the records) — deactivate it instead; it disappears from entry forms but stays on reports for past years.</p>
+    </div>
+    <div class="card">
+      <h2>Annual budgets</h2>
+      <div class="row">
+        <div><label>Budget year</label><select id="bYear"></select></div>
+      </div>
+      <div class="scroll" style="margin-top:10px"><table id="budgetTable"></table></div>
+      <div class="btnrow"><button class="btn" id="bSave">Save budgets</button></div>
+      <p class="muted">Enter the approved annual budget per fund. Reports compare budget vs. actual giving and spending for the year.</p>
+    </div>
+  </section>
+
+  <!-- ================= ATTENDANCE ================= -->
+  <section class="tab" id="tab-attend">
+    <div class="card">
+      <h2>Record attendance</h2>
+      <div class="row">
+        <div><label>Date (service)</label><input type="date" id="aDate"></div>
+        <div><label>Attendance count</label><input inputmode="decimal" type="number" id="aCount" min="0" step="1" placeholder="0"></div>
+        <div><label>Note (optional)</label><input type="text" id="aNote" placeholder="e.g. Easter, snow day"></div>
+      </div>
+      <div class="btnrow"><button class="btn" id="aSave">Save attendance</button></div>
+    </div>
+    <div class="card">
+      <h2>Attendance records</h2>
+      <div id="attSummary" style="margin-bottom:8px"></div>
+      <div class="scroll"><table id="attTable"></table></div>
+    </div>
+  </section>
+
+  <!-- ================= REPORTS ================= -->
+  <section class="tab" id="tab-reports">
+    <div class="card">
+      <h2>Year-end giving statements</h2>
+      <div class="row">
+        <div><label>Statement year</label><select id="rYear"></select></div>
+        <div><label>Statement for</label><select id="rMember"></select></div>
+      </div>
+      <div class="btnrow">
+        <button class="btn" id="rPreview">Preview statement</button>
+        <button class="btn ghost" id="rPrintOne">Print this statement</button>
+        <button class="btn ghost" id="rPrintAll">Print statements for ALL givers</button>
+      </div>
+      <p class="muted">Every giver with at least one cash gift in the year gets a statement. Statements list each gift (date, fund, amount) and the IRS acknowledgment language. Non-cash gifts are described on the statement without a dollar value, as the rules require.</p>
+      <div id="stmtPreview" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <h2>Finance committee summary</h2>
+      <p class="muted">Budget vs. actual, fund balances, and attendance for the statement year above.</p>
+      <div id="finSummary"></div>
+      <div class="btnrow"><button class="btn ghost" id="rPrintFin">Print finance summary</button></div>
+    </div>
+  </section>
+
+  <!-- ================= SETTINGS ================= -->
+  <section class="tab" id="tab-settings">
+    <div class="card">
+      <h2>Church settings (prints on statements)</h2>
+      <div class="row">
+        <div><label>Church name</label><input type="text" id="sName"></div>
+        <div><label>EIN (optional, prints on statement)</label><input type="text" id="sEin" placeholder="12-3456789"></div>
+      </div>
+      <label>Church mailing address</label><input type="text" id="sAddr">
+      <div class="row">
+        <div><label>Statement signed by (name)</label><input type="text" id="sSigner"></div>
+        <div><label>Title</label><input type="text" id="sSignerTitle" placeholder="Treasurer"></div>
+      </div>
+      <label>Extra statement note (optional — prints under the totals)</label>
+      <textarea id="sStmtNote" placeholder="e.g. Thank you for your faithful giving in 2026."></textarea>
+      <div class="btnrow"><button class="btn" id="sSave">Save settings</button></div>
+    </div>
+    <div class="card">
+      <h2>Backup &amp; data</h2>
+      <div class="btnrow">
+        <button class="btn ghost" id="xExport">Export backup</button>
+        <button class="btn ghost" id="xImportBtn">Import backup</button>
+        <input type="file" id="xImport" accept=".json,application/json" style="display:none">
+        <button class="btn ghost" id="xDemo">Reload sample data</button>
+        <button class="btn danger" id="xClear">Clear sample data (start empty)</button>
+      </div>
+      <p class="muted">Your records live only in this browser on this device. Export a backup regularly and keep it somewhere safe — if the browser's site data is cleared or the device is lost, the backup file is the only way back.</p>
+    </div>
+    <div class="card">
+      <h2>Help &amp; honest limits</h2>
+      <p><b>What ParishBook is:</b> the treasurer's record book — contributions by giver and fund, expenses, fund balances, budgets, attendance, a member directory, and clean printed year-end giving statements.</p>
+      <p><b>What it is not:</b> ParishBook cannot accept online giving, run cards, or process payments of any kind — it's a single offline file with no accounts and no connection to any payment service. Members give the way they already do (plate, check, your existing online-giving provider); you record it here. It is also not a payroll system, not a full double-entry accounting package, and not tax advice — the statements include the standard IRS acknowledgment wording, but your church's own advisor should confirm anything unusual.</p>
+      <p><b>Workflow that works:</b> after each service, enter the count and the gifts (5 minutes with the deposit slip in hand). In January, pick the year in Reports, print all statements, and mail or hand them out — the $250+ gifts are already flagged through the year so nothing is a surprise.</p>
+      <p><b>Sample data:</b> the app ships with a fictional church (Grace Community Church) so you can see every screen working. Use “Clear sample data” in Backup &amp; data when you're ready for your own records.</p>
+    </div>
+  <div id="legalSection"></div>
+</section>
+</main>
+<div id="printArea"></div>
+<script>
+'use strict';
+/* ============================================================
+   ParishBook — single-file app. All data in localStorage.
+   ============================================================ */
+var LS_KEY = 'parishbook_v1';
+var CATS = ['Utilities','Insurance','Supplies & materials','Repairs & maintenance','Pastor / staff support','Missions support','Events & outreach','Office & admin','Other'];
+
+function uid(p){ return (p||'id') + '_' + Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+function cents(n){ return Math.round((Number(n)||0)*100); }
+function money(c){ var v = c/100; var neg = v<0; var s = Math.abs(v).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','); return (neg?'-$':'$')+s; }
+function fmtDate(iso){
+  if(!iso) return '';
+  var p = String(iso).split('-'); if(p.length!==3) return esc(iso);
+  var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return months[Number(p[1])-1] + ' ' + Number(p[2]) + ', ' + p[0];
+}
+function yearOf(iso){ return Number(String(iso||'').slice(0,4)) || 0; }
+function todayISO(){ var d = new Date(); function z(n){ return (n<10?'0':'')+n; } return d.getFullYear()+'-'+z(d.getMonth()+1)+'-'+z(d.getDate()); }
+
+/* ---------------- seed / sample data ---------------- */
+function seedState(){
+  var funds = [
+    {id:'f_general', name:'General Fund', kind:'general', active:true},
+    {id:'f_building', name:'Building Fund', kind:'designated', active:true},
+    {id:'f_missions', name:'Missions Fund', kind:'designated', active:true},
+    {id:'f_benevolence', name:'Benevolence Fund', kind:'designated', active:true}
+  ];
+  var members = [
+    {id:'m_anon', name:'Anonymous / Loose Cash', env:'', addr:'', email:'', phone:'', since:'', notes:'Plate cash and unidentified gifts. Never receives a statement.', active:true, system:true},
+    {id:'m_carter', name:'James & Mary Carter', env:'101', addr:'412 Elm Street, Maplewood, OK 74000', email:'carter.family@example.com', phone:'918-555-0141', since:'2019', notes:'', active:true},
+    {id:'m_delgado', name:'Robert Delgado', env:'102', addr:'88 Harbor Lane, Maplewood, OK 74000', email:'', phone:'918-555-0117', since:'2022', notes:'', active:true},
+    {id:'m_whitfield', name:'Susan Whitfield', env:'103', addr:'1204 Lakeshore Dr, Maplewood, OK 74000', email:'s.whitfield@example.com', phone:'', since:'2016', notes:'', active:true},
+    {id:'m_nguyen', name:'David & Linh Nguyen', env:'104', addr:'317 S Main St, Maplewood, OK 74000', email:'nguyen.household@example.com', phone:'918-555-0129', since:'2023', notes:'', active:true},
+    {id:'m_bixby', name:'Carol Bixby', env:'105', addr:'9 County Road 210, Jay, OK 74346', email:'', phone:'', since:'2020', notes:'', active:true},
+    {id:'m_evers', name:'Tom & Rachel Evers', env:'106', addr:'55 Sunset Terrace, Maplewood, OK 74000', email:'', phone:'918-555-0133', since:'2024', notes:'', active:true}
+  ];
+  function G(id,date,member,fund,amount,method,check,kind,desc,note){
+    return {id:id, date:date, member:member, fund:fund, amount:amount, method:method||'Check', check:check||'', kind:kind||'cash', desc:desc||'', note:note||''};
+  }
+  var contributions = [
+    G('g01','2025-12-28','m_carter','f_general',200,'Check','1187'),
+    G('g02','2025-12-25','m_whitfield','f_general',400,'Check','2210'),
+    G('g03','2026-01-04','m_carter','f_general',200,'Check','1201'),
+    G('g04','2026-01-04','m_anon','f_general',63,'Cash','','cash','','Loose plate cash'),
+    G('g05','2026-01-11','m_delgado','f_general',85,'Cash'),
+    G('g06','2026-01-11','m_anon','f_general',58,'Cash','','cash','','Loose plate cash'),
+    G('g07','2026-01-18','m_whitfield','f_general',500,'Check','2244'),
+    G('g08','2026-01-25','m_nguyen','f_general',120,'Online'),
+    G('g09','2026-02-01','m_carter','f_general',200,'Check','1210'),
+    G('g10','2026-02-01','m_bixby','f_missions',60,'Check','087'),
+    G('g11','2026-02-01','m_bixby','f_general',40,'Check','087'),
+    G('g12','2026-02-08','m_delgado','f_general',85,'Cash'),
+    G('g13','2026-02-15','m_carter','f_building',300,'Check','1215'),
+    G('g14','2026-02-22','m_nguyen','f_general',120,'Online'),
+    G('g15','2026-03-01','m_carter','f_general',200,'Check','1220'),
+    G('g16','2026-03-01','m_bixby','f_general',0,'Other','','noncash','Case of paper goods and pantry supplies','Food pantry donation'),
+    G('g17','2026-03-08','m_delgado','f_general',85,'Cash'),
+    G('g18','2026-03-15','m_carter','f_missions',150,'Check','1224'),
+    G('g19','2026-03-22','m_nguyen','f_general',120,'Online'),
+    G('g20','2026-04-05','m_nguyen','f_benevolence',75,'Online'),
+    G('g21','2026-05-03','m_evers','f_general',175,'Check','552'),
+    G('g22','2026-05-31','m_evers','f_general',175,'Check','560'),
+    G('g23','2026-06-14','m_whitfield','f_building',1000,'Check','2301'),
+    G('g24','2026-11-29','m_whitfield','f_general',500,'Check','2377'),
+    G('g25','2026-12-20','m_carter','f_general',250,'Check','1289')
+  ];
+  function E(id,date,fund,cat,payee,amount,note){ return {id:id, date:date, fund:fund, cat:cat, payee:payee, amount:amount, note:note||''}; }
+  var expenses = [
+    E('e1','2026-01-15','f_general','Utilities','Grand River Electric',212.40,'Electric + water, January'),
+    E('e2','2026-02-03','f_general','Insurance','Brotherhood Mutual',485,'Quarterly property/liability premium'),
+    E('e3','2026-02-20','f_missions','Missions support','Harbor Missions Intl',200,'Quarterly support'),
+    E('e4','2026-03-10','f_building','Repairs & maintenance','Grand Lake Roofing',750,'Roof repair deposit'),
+    E('e5','2026-03-18','f_general','Supplies & materials','Office Supply Co',96.25,'Paper, toner, envelopes')
+  ];
+  var attendance = [
+    {id:'a1', date:'2026-01-04', count:58, note:''},
+    {id:'a2', date:'2026-01-11', count:61, note:''},
+    {id:'a3', date:'2026-01-18', count:55, note:'Cold snap'},
+    {id:'a4', date:'2026-01-25', count:63, note:''}
+  ];
+  var budgets = { '2026': { f_general:6000, f_building:2500, f_missions:600, f_benevolence:400 } };
+  return {
+    settings: { name:'Grace Community Church', addr:'1200 Church Street, Maplewood, OK 74000', ein:'73-1642085', signer:'Carol Bixby', signerTitle:'Treasurer', stmtNote:'Thank you for your faithful giving. Please review this statement and contact the church office with any corrections.' },
+    members:members, funds:funds, contributions:contributions, expenses:expenses, attendance:attendance, budgets:budgets,
+    demo:true
+  };
+}
+function emptyState(){
+  var s = seedState();
+  return { settings:{name:'', addr:'', ein:'', signer:'', signerTitle:'Treasurer', stmtNote:''},
+    members:[ s.members[0] ], funds:s.funds, contributions:[], expenses:[], attendance:[], budgets:{}, demo:false };
+}
+
+/* ---------------- persistence ---------------- */
+var state = null;
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
+function load(){
+  var raw = null;
+  try{ raw = localStorage.getItem(LS_KEY); }catch(e){}
+  if(raw){
+    try{ var s = JSON.parse(raw); if(s && s.members && s.funds && s.contributions){ state = s; return; } }catch(e){}
+    try{ localStorage.setItem(LS_KEY+'_corrupt_backup', raw); }catch(_){}
+  }
+  state = seedState(); save();
+}
+
+/* ---------------- lookups ---------------- */
+function memberById(id){ for(var i=0;i<state.members.length;i++) if(state.members[i].id===id) return state.members[i]; return null; }
+function fundById(id){ for(var i=0;i<state.funds.length;i++) if(state.funds[i].id===id) return state.funds[i]; return null; }
+function memberName(id){ var m = memberById(id); return m ? m.name : '(deleted giver)'; }
+function fundName(id){ var f = fundById(id); return f ? f.name : '(deleted fund)'; }
+function isAnon(id){ return id==='m_anon'; }
+
+/* ---------------- math (all money in integer cents) ---------------- */
+function giftCents(g){ return g.kind==='noncash' ? 0 : cents(g.amount); }
+function fundTotals(year){
+  // returns {fundId:{in, out, bal}} in cents, all funds incl deleted-id buckets
+  var out = {};
+  state.funds.forEach(function(f){ out[f.id] = {inn:0, out:0, bal:0}; });
+  state.contributions.forEach(function(g){
+    if(year && yearOf(g.date)!==year) return;
+    if(!out[g.fund]) out[g.fund] = {inn:0, out:0, bal:0};
+    out[g.fund].inn += giftCents(g);
+  });
+  state.expenses.forEach(function(e){
+    if(year && yearOf(e.date)!==year) return;
+    if(!out[e.fund]) out[e.fund] = {inn:0, out:0, bal:0};
+    out[e.fund].out += cents(e.amount);
+  });
+  Object.keys(out).forEach(function(k){ out[k].bal = out[k].inn - out[k].out; });
+  return out;
+}
+function totalGiving(year){ var t=0; state.contributions.forEach(function(g){ if(!year || yearOf(g.date)===year) t += giftCents(g); }); return t; }
+function totalExpenses(year){ var t=0; state.expenses.forEach(function(e){ if(!year || yearOf(e.date)===year) t += cents(e.amount); }); return t; }
+function memberYearGifts(memberId, year){
+  return state.contributions.filter(function(g){ return g.member===memberId && yearOf(g.date)===year; })
+    .sort(function(a,b){ return a.date<b.date?-1:(a.date>b.date?1:0); });
+}
+function memberYearTotal(memberId, year){
+  var t=0; memberYearGifts(memberId, year).forEach(function(g){ t += giftCents(g); }); return t;
+}
+function flaggedGifts(year){ // single cash gifts >= $250
+  return state.contributions.filter(function(g){ return g.kind!=='noncash' && cents(g.amount)>=25000 && (!year || yearOf(g.date)===year); });
+}
+function attendanceStats(year){
+  var rows = state.attendance.filter(function(a){ return !year || yearOf(a.date)===year; });
+  if(!rows.length) return {count:0, avg:0, total:0};
+  var tot = 0; rows.forEach(function(a){ tot += Number(a.count)||0; });
+  return {count:rows.length, total:tot, avg: tot/rows.length};
+}
+function budgetFor(year, fundId){
+  var b = state.budgets && state.budgets[String(year)];
+  return b && b[fundId]!=null ? cents(b[fundId]) : 0;
+}
+function yearsPresent(){
+  var set = {};
+  state.contributions.forEach(function(g){ set[yearOf(g.date)] = 1; });
+  state.expenses.forEach(function(e){ set[yearOf(e.date)] = 1; });
+  state.attendance.forEach(function(a){ set[yearOf(a.date)] = 1; });
+  var ys = Object.keys(set).map(Number).filter(function(y){ return y>0; }).sort(function(a,b){ return b-a; });
+  var cy = new Date().getFullYear();
+  if(ys.indexOf(cy)<0) ys.unshift(cy);
+  return ys;
+}
+
+/* ---------------- DOM helpers ---------------- */
+function $(id){ return document.getElementById(id); }
+function val(id){ var el = $(id); return el ? el.value : ''; }
+function setVal(id,v){ var el = $(id); if(el) el.value = (v==null?'':v); }
+function selectedYear(id, fallback){
+  var v = Number(val(id));
+  return v || fallback || new Date().getFullYear();
+}
+function fillYearSelect(id, keep){
+  var el = $(id); if(!el) return;
+  var cur = keep!=null ? keep : el.value;
+  var ys = yearsPresent();
+  el.innerHTML = ys.map(function(y){ return '<option value="'+y+'">'+y+'</option>'; }).join('');
+  if(cur && ys.indexOf(Number(cur))>=0) el.value = cur;
+}
+function fillFundSelect(id, allLabel, includeInactive){
+  var el = $(id); if(!el) return;
+  var cur = el.value;
+  var html = allLabel ? '<option value="">'+esc(allLabel)+'</option>' : '';
+  state.funds.forEach(function(f){
+    if(!includeInactive && !f.active && f.id!==cur) return;
+    html += '<option value="'+f.id+'">'+esc(f.name)+(f.active?'':' (inactive)')+'</option>';
+  });
+  el.innerHTML = html;
+  if(cur) el.value = cur;
+}
+function fillMemberSelect(id, allLabel, includeAnon){
+  var el = $(id); if(!el) return;
+  var cur = el.value;
+  var html = allLabel ? '<option value="">'+esc(allLabel)+'</option>' : '';
+  state.members.forEach(function(m){
+    if(m.system && !includeAnon && !allLabel) { /* anon allowed in giving entry */ }
+    if(!m.active && m.id!==cur) return;
+    html += '<option value="'+m.id+'">'+esc(m.name)+'</option>';
+  });
+  el.innerHTML = html;
+  if(cur) el.value = cur;
+}
+
+/* ---------------- tabs ---------------- */
+function showTab(name){
+  var btns = document.querySelectorAll('#tabs button');
+  btns.forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-tab')===name); });
+  var secs = document.querySelectorAll('section.tab');
+  secs.forEach(function(s){ s.classList.toggle('active', s.id==='tab-'+name); });
+  renderAll();
+}
+
+/* ---------------- dashboard ---------------- */
+function renderDash(){
+  var yr = selectedYear('rYear', new Date().getFullYear());
+  var ft = fundTotals(yr);
+  var gIn = totalGiving(yr), gOut = totalExpenses(yr);
+  var att = attendanceStats(yr);
+  var flags = flaggedGifts(yr).filter(function(g){ return !isAnon(g.member); });
+  var givers = {};
+  state.contributions.forEach(function(g){ if(yearOf(g.date)===yr && g.kind!=='noncash' && !isAnon(g.member)) givers[g.member]=1; });
+  $('dashStats').innerHTML =
+    stat('Giving — '+yr, money(gIn), state.contributions.filter(function(g){return yearOf(g.date)===yr && g.kind!=='noncash';}).length + ' cash gifts') +
+    stat('Expenses — '+yr, money(gOut), '') +
+    stat('Net — '+yr, money(gIn-gOut), 'giving minus expenses') +
+    stat('Active givers — '+yr, String(Object.keys(givers).length), 'households (excl. loose cash)') +
+    stat('Avg. attendance — '+yr, att.count ? (Math.round(att.avg*10)/10) : '—', att.count + ' services recorded');
+  var ack = $('ackAlert');
+  if(flags.length){
+    ack.innerHTML = '<div class="alert">⚠️ <b>'+flags.length+' gift'+(flags.length===1?'':'s')+' of $250 or more</b> recorded in '+yr+'. Each one must be covered by a written acknowledgment — the year-end statement in Reports covers them all, as long as it goes out by Jan 31.</div>';
+  } else ack.innerHTML = '';
+  var rows = state.funds.map(function(f){
+    var t = ft[f.id] || {inn:0,out:0,bal:0};
+    return '<tr><td>'+esc(f.name)+(f.active?'':' <span class="pill off">inactive</span>')+'</td><td class="num">'+money(t.inn)+'</td><td class="num">'+money(t.out)+'</td><td class="num"><b>'+money(t.bal)+'</b></td></tr>';
+  }).join('');
+  $('dashFunds').innerHTML = '<tr><th>Fund</th><th class="num">Given '+yr+'</th><th class="num">Spent '+yr+'</th><th class="num">Balance</th></tr>' + rows +
+    '<tr class="total"><td>All funds</td><td class="num">'+money(gIn)+'</td><td class="num">'+money(gOut)+'</td><td class="num">'+money(gIn-gOut)+'</td></tr>';
+  var recent = state.contributions.slice().sort(function(a,b){ return a.date<b.date?1:-1; }).slice(0,8);
+  $('dashRecent').innerHTML = '<tr><th>Date</th><th>Giver</th><th>Fund</th><th class="num">Amount</th></tr>' +
+    (recent.length ? recent.map(function(g){
+      return '<tr><td>'+fmtDate(g.date)+'</td><td>'+esc(memberName(g.member))+'</td><td>'+esc(fundName(g.fund))+'</td><td class="num">'+(g.kind==='noncash'?'non-cash':money(giftCents(g)))+'</td></tr>';
+    }).join('') : '<tr><td colspan="4" class="empty">No contributions recorded yet.</td></tr>');
+  $('churchLine').textContent = (state.settings.name ? state.settings.name + ' — ' : '') + "Small Church Treasurer's Book";
+}
+function stat(k,v,s){ return '<div class="stat"><div class="k">'+esc(k)+'</div><div class="v">'+esc(v)+'</div><div class="s">'+esc(s)+'</div></div>'; }
+
+/* ---------------- giving ---------------- */
+var editGiftId = null;
+function renderGiving(){
+  fillMemberSelect('gMember', null, true);
+  fillFundSelect('gFund');
+  fillYearSelect('fYear'); fillFundSelect('fFund','All funds', true); fillMemberSelect('fMember','All givers', true);
+  var yr = selectedYear('fYear'), ff = val('fFund'), fm = val('fMember'), ft2 = (val('fText')||'').toLowerCase();
+  var rows = state.contributions.filter(function(g){
+    if(yr && yearOf(g.date)!==yr) return false;
+    if(ff && g.fund!==ff) return false;
+    if(fm && g.member!==fm) return false;
+    if(ft2){
+      var hay = (memberName(g.member)+' '+fundName(g.fund)+' '+(g.note||'')+' '+(g.check||'')+' '+(g.desc||'')).toLowerCase();
+      if(hay.indexOf(ft2)<0) return false;
+    }
+    return true;
+  }).sort(function(a,b){ return a.date<b.date?1:-1; });
+  var tot = 0;
+  $('giftTable').innerHTML = '<tr><th>Date</th><th>Giver</th><th>Fund</th><th>Method</th><th class="num">Amount</th><th></th></tr>' +
+    (rows.length ? rows.map(function(g){
+      tot += giftCents(g);
+      var flag = (g.kind!=='noncash' && cents(g.amount)>=25000) ? ' <span class="pill flag">$250+ ack</span>' : '';
+      var amt = g.kind==='noncash' ? 'non-cash' : money(giftCents(g));
+      var sub = g.kind==='noncash' ? '<div class="muted">'+esc(g.desc||'')+'</div>' : (g.check ? '<div class="muted">Check #'+esc(g.check)+'</div>' : '');
+      return '<tr><td>'+fmtDate(g.date)+'</td><td>'+esc(memberName(g.member))+flag+sub+'</td><td>'+esc(fundName(g.fund))+'</td><td>'+esc(g.method)+(g.note?' <span class="muted">· '+esc(g.note)+'</span>':'')+'</td><td class="num">'+amt+'</td><td style="white-space:nowrap"><button class="edit" data-edit-gift="'+g.id+'">Edit</button><button class="del" data-del-gift="'+g.id+'">Delete</button></td></tr>';
+    }).join('') : '<tr><td colspan="6" class="empty">No contributions match.</td></tr>');
+  $('giftTotals').innerHTML = '<b>Filtered total (cash): ' + money(tot) + '</b> <span class="muted">— non-cash gifts are listed but never counted in dollar totals.</span>';
+}
+function giftFormReset(){
+  editGiftId = null;
+  setVal('gDate', todayISO()); setVal('gAmount',''); setVal('gCheck',''); setVal('gNote',''); setVal('gDesc','');
+  setVal('gKind','cash'); $('gNoncashWrap').style.display='none';
+  $('gSave').textContent='Save contribution'; $('gCancel').style.display='none'; $('giftFormTitle').textContent='Record a contribution';
+}
+function saveGift(){
+  var date = val('gDate'), member = val('gMember'), fund = val('gFund'), kind = val('gKind');
+  var amount = parseFloat(val('gAmount'));
+  var desc = val('gDesc').trim();
+  if(!date){ alert('Pick a date for the contribution.'); return; }
+  if(!member){ alert('Pick a giver.'); return; }
+  if(!fund){ alert('Pick a fund.'); return; }
+  if(kind==='noncash'){
+    if(!desc){ alert('Describe the non-cash gift (the statement must describe it).'); return; }
+    amount = 0;
+  } else {
+    if(isNaN(amount) || amount<=0){ alert('Enter an amount greater than $0 for a cash/check gift.'); return; }
+    amount = Math.round(amount*100)/100;
+  }
+  var rec = { id: editGiftId || uid('g'), date:date, member:member, fund:fund, amount:amount,
+    method: val('gMethod'), check: val('gCheck').trim(), kind:kind, desc:desc, note: val('gNote').trim() };
+  if(editGiftId){
+    for(var i=0;i<state.contributions.length;i++) if(state.contributions[i].id===editGiftId) state.contributions[i]=rec;
+  } else state.contributions.push(rec);
+  save(); giftFormReset(); renderAll();
+}
+
+/* ---------------- expenses ---------------- */
+var editExpId = null;
+function renderExpenses(){
+  fillFundSelect('eFund'); fillYearSelect('efYear'); fillFundSelect('efFund','All funds', true);
+  var cat = $('eCat');
+  if(cat && !cat.options.length) cat.innerHTML = CATS.map(function(c){ return '<option>'+esc(c)+'</option>'; }).join('');
+  var yr = selectedYear('efYear'), ff = val('efFund');
+  var rows = state.expenses.filter(function(e){
+    if(yr && yearOf(e.date)!==yr) return false;
+    if(ff && e.fund!==ff) return false;
+    return true;
+  }).sort(function(a,b){ return a.date<b.date?1:-1; });
+  var tot = 0;
+  $('expTable').innerHTML = '<tr><th>Date</th><th>Fund</th><th>Category</th><th>Paid to</th><th class="num">Amount</th><th></th></tr>' +
+    (rows.length ? rows.map(function(e){
+      tot += cents(e.amount);
+      return '<tr><td>'+fmtDate(e.date)+'</td><td>'+esc(fundName(e.fund))+'</td><td>'+esc(e.cat)+'</td><td>'+esc(e.payee)+(e.note?' <span class="muted">· '+esc(e.note)+'</span>':'')+'</td><td class="num">'+money(cents(e.amount))+'</td><td style="white-space:nowrap"><button class="edit" data-edit-exp="'+e.id+'">Edit</button><button class="del" data-del-exp="'+e.id+'">Delete</button></td></tr>';
+    }).join('') : '<tr><td colspan="6" class="empty">No expenses match.</td></tr>');
+  $('expTotals').innerHTML = '<b>Filtered total: ' + money(tot) + '</b>';
+}
+function expFormReset(){
+  editExpId = null;
+  setVal('eDate', todayISO()); setVal('eAmount',''); setVal('ePayee',''); setVal('eNote','');
+  $('eSave').textContent='Save expense'; $('eCancel').style.display='none'; $('expFormTitle').textContent='Record an expense';
+}
+function saveExpense(){
+  var date = val('eDate'), fund = val('eFund'), amount = parseFloat(val('eAmount'));
+  if(!date){ alert('Pick a date for the expense.'); return; }
+  if(!fund){ alert('Pick a fund.'); return; }
+  if(isNaN(amount) || amount<=0){ alert('Enter an amount greater than $0.'); return; }
+  var rec = { id: editExpId || uid('e'), date:date, fund:fund, cat: val('eCat'), payee: val('ePayee').trim(), amount: Math.round(amount*100)/100, note: val('eNote').trim() };
+  if(editExpId){ for(var i=0;i<state.expenses.length;i++) if(state.expenses[i].id===editExpId) state.expenses[i]=rec; }
+  else state.expenses.push(rec);
+  save(); expFormReset(); renderAll();
+}
+
+/* ---------------- members ---------------- */
+var editMemId = null;
+function renderMembers(){
+  var rows = state.members.slice().sort(function(a,b){ return a.name<b.name?-1:1; }).map(function(m){
+    var given = 0; state.contributions.forEach(function(g){ if(g.member===m.id) given += giftCents(g); });
+    var cnt = state.contributions.filter(function(g){ return g.member===m.id; }).length;
+    return '<tr><td><b>'+esc(m.name)+'</b>'+(m.system?' <span class="pill off">built-in</span>':'')+(m.active?'':' <span class="pill off">inactive</span>')+(m.env?'<div class="muted">Envelope #'+esc(m.env)+'</div>':'')+'</td>' +
+      '<td>'+esc(m.addr||'')+(m.email?'<div class="muted">'+esc(m.email)+'</div>':'')+(m.phone?'<div class="muted">'+esc(m.phone)+'</div>':'')+'</td>' +
+      '<td class="num">'+cnt+'</td><td class="num">'+money(given)+'</td>' +
+      '<td style="white-space:nowrap">'+(m.system?'':'<button class="edit" data-edit-mem="'+m.id+'">Edit</button><button class="del" data-del-mem="'+m.id+'">Delete</button>')+'</td></tr>';
+  }).join('');
+  $('memTable').innerHTML = '<tr><th>Member / household</th><th>Contact</th><th class="num">Gifts (all time)</th><th class="num">Given (all time)</th><th></th></tr>' + rows;
+}
+function memFormReset(){
+  editMemId = null;
+  ['mName','mEnv','mSince','mAddr','mEmail','mPhone','mNotes'].forEach(function(id){ setVal(id,''); });
+  $('mSave').textContent='Save member'; $('mCancel').style.display='none'; $('memFormTitle').textContent='Add a member / household';
+}
+function saveMember(){
+  var name = val('mName').trim();
+  if(!name){ alert('Enter the member or household name.'); return; }
+  var rec = { id: editMemId || uid('m'), name:name, env: val('mEnv').trim(), since: val('mSince').trim(),
+    addr: val('mAddr').trim(), email: val('mEmail').trim(), phone: val('mPhone').trim(), notes: val('mNotes').trim(), active:true };
+  if(editMemId){
+    var old = memberById(editMemId); rec.active = old.active; rec.system = old.system;
+    for(var i=0;i<state.members.length;i++) if(state.members[i].id===editMemId) state.members[i]=rec;
+  } else state.members.push(rec);
+  save(); memFormReset(); renderAll();
+}
+
+/* ---------------- funds & budgets ---------------- */
+function renderFunds(){
+  var ft = fundTotals(0);
+  $('fundTable').innerHTML = '<tr><th>Fund</th><th>Type</th><th class="num">Given (all time)</th><th class="num">Spent (all time)</th><th class="num">Balance</th><th></th></tr>' +
+    state.funds.map(function(f){
+      var t = ft[f.id] || {inn:0,out:0,bal:0};
+      return '<tr><td><b>'+esc(f.name)+'</b>'+(f.active?'':' <span class="pill off">inactive</span>')+'</td><td>'+(f.kind==='designated'?'Designated':'General')+'</td><td class="num">'+money(t.inn)+'</td><td class="num">'+money(t.out)+'</td><td class="num"><b>'+money(t.bal)+'</b></td>' +
+      '<td style="white-space:nowrap"><button class="edit" data-toggle-fund="'+f.id+'">'+(f.active?'Deactivate':'Reactivate')+'</button><button class="del" data-del-fund="'+f.id+'">Delete</button></td></tr>';
+    }).join('');
+  fillYearSelect('bYear');
+  var yr = selectedYear('bYear');
+  $('budgetTable').innerHTML = '<tr><th>Fund</th><th class="num">Budget '+yr+' ($)</th><th class="num">Given</th><th class="num">Spent</th></tr>' +
+    state.funds.map(function(f){
+      var t = (fundTotals(yr)[f.id]) || {inn:0,out:0};
+      var b = state.budgets && state.budgets[String(yr)] && state.budgets[String(yr)][f.id];
+      return '<tr><td>'+esc(f.name)+'</td><td class="num"><input inputmode="decimal" type="number" min="0" step="1" data-budget="'+f.id+'" value="'+(b==null?'':b)+'" style="max-width:140px;text-align:right"></td><td class="num">'+money(t.inn)+'</td><td class="num">'+money(t.out)+'</td></tr>';
+    }).join('');
+}
+function saveBudgets(){
+  var yr = String(selectedYear('bYear'));
+  if(!state.budgets) state.budgets = {};
+  if(!state.budgets[yr]) state.budgets[yr] = {};
+  var inputs = document.querySelectorAll('[data-budget]');
+  inputs.forEach(function(inp){
+    var v = parseFloat(inp.value);
+    if(isNaN(v) || v<0) delete state.budgets[yr][inp.getAttribute('data-budget')];
+    else state.budgets[yr][inp.getAttribute('data-budget')] = Math.round(v*100)/100;
+  });
+  save(); renderAll();
+}
+
+/* ---------------- attendance ---------------- */
+function renderAttend(){
+  var rows = state.attendance.slice().sort(function(a,b){ return a.date<b.date?1:-1; });
+  var st = attendanceStats(0);
+  $('attSummary').innerHTML = rows.length ? '<b>'+rows.length+' services recorded · average attendance '+(Math.round(st.avg*10)/10)+'</b> (all time)' : '';
+  $('attTable').innerHTML = '<tr><th>Date</th><th class="num">Attendance</th><th>Note</th><th></th></tr>' +
+    (rows.length ? rows.map(function(a){
+      return '<tr><td>'+fmtDate(a.date)+'</td><td class="num">'+(Number(a.count)||0)+'</td><td>'+esc(a.note||'')+'</td><td><button class="del" data-del-att="'+a.id+'">Delete</button></td></tr>';
+    }).join('') : '<tr><td colspan="4" class="empty">No attendance recorded yet.</td></tr>');
+}
+
+/* ---------------- statements & reports ---------------- */
+function statementHTML(member, year){
+  var gifts = memberYearGifts(member.id, year);
+  var cash = gifts.filter(function(g){ return g.kind!=='noncash'; });
+  var noncash = gifts.filter(function(g){ return g.kind==='noncash'; });
+  var total = memberYearTotal(member.id, year);
+  var s = state.settings;
+  var h = '<div class="stmt"><div class="letterhead"><h1>'+esc(s.name||'Your Church')+'</h1>' +
+    '<div>'+esc(s.addr||'')+(s.ein ? ' · EIN '+esc(s.ein) : '')+'</div></div>' +
+    '<p><b>Contribution Statement — January 1 to December 31, '+year+'</b></p>' +
+    '<p>'+esc(member.name)+(member.addr ? '<br>'+esc(member.addr) : '')+'</p>';
+  if(cash.length){
+    h += '<table><tr><th>Date</th><th>Fund</th><th>Method</th><th style="text-align:right">Amount</th></tr>' +
+      cash.map(function(g){
+        return '<tr><td>'+fmtDate(g.date)+'</td><td>'+esc(fundName(g.fund))+'</td><td>'+esc(g.method)+(g.check?' #'+esc(g.check):'')+'</td><td style="text-align:right">'+money(giftCents(g))+'</td></tr>';
+      }).join('') +
+      '<tr class="total"><td colspan="3">Total contributions — '+year+'</td><td style="text-align:right">'+money(total)+'</td></tr></table>';
+  } else {
+    h += '<p>No cash contributions were recorded for this giver in '+year+'.</p>';
+  }
+  if(noncash.length){
+    h += '<h2>Non-cash gifts received</h2><table><tr><th>Date</th><th>Description</th><th>Fund</th></tr>' +
+      noncash.map(function(g){ return '<tr><td>'+fmtDate(g.date)+'</td><td>'+esc(g.desc||'Non-cash gift')+'</td><td>'+esc(fundName(g.fund))+'</td></tr>'; }).join('') + '</table>' +
+      '<p class="foot">Non-cash gifts are described above without a dollar value; determining the value of a non-cash gift for tax purposes is the donor\'s responsibility.</p>';
+  }
+  h += '<div class="foot"><p>No goods or services were provided in exchange for the contributions listed above, other than intangible religious benefits.</p>' +
+    (s.stmtNote ? '<p>'+esc(s.stmtNote)+'</p>' : '') +
+    '<p style="margin-top:22px">___________________________________<br>'+esc(s.signer||'')+(s.signerTitle ? ', '+esc(s.signerTitle) : '')+(s.name ? ' — '+esc(s.name) : '')+'</p></div></div>';
+  return h;
+}
+function giversForYear(year){
+  var seen = {};
+  state.contributions.forEach(function(g){ if(yearOf(g.date)===year && g.kind!=='noncash' && !isAnon(g.member)) seen[g.member]=1; });
+  return Object.keys(seen).map(function(id){ return memberById(id); }).filter(Boolean)
+    .sort(function(a,b){ return a.name<b.name?-1:1; });
+}
+function renderReports(){
+  fillYearSelect('rYear');
+  var yr = selectedYear('rYear');
+  var givers = giversForYear(yr);
+  var sel = $('rMember'); var cur = sel.value;
+  sel.innerHTML = givers.length ? givers.map(function(m){ return '<option value="'+m.id+'">'+esc(m.name)+' — '+money(memberYearTotal(m.id, yr))+'</option>'; }).join('') : '<option value="">(no givers with cash gifts in '+yr+')</option>';
+  if(cur && givers.some(function(m){ return m.id===cur; })) sel.value = cur;
+  // finance summary
+  var ft = fundTotals(yr);
+  var rows = state.funds.map(function(f){
+    var t = ft[f.id] || {inn:0,out:0,bal:0};
+    var b = budgetFor(yr, f.id);
+    var spendPct = b>0 ? Math.round(t.out/b*100) : null;
+    return '<tr><td>'+esc(f.name)+'</td><td class="num">'+(b?money(b):'—')+'</td><td class="num">'+money(t.inn)+'</td><td class="num">'+money(t.out)+(spendPct!=null?' <span class="muted">('+spendPct+'% of budget)</span>':'')+'</td><td class="num"><b>'+money(t.bal)+'</b></td></tr>';
+  }).join('');
+  var att = attendanceStats(yr);
+  $('finSummary').innerHTML = '<div class="scroll"><table><tr><th>Fund</th><th class="num">Budget '+yr+'</th><th class="num">Given</th><th class="num">Spent</th><th class="num">Balance</th></tr>' + rows +
+    '<tr class="total"><td>All funds</td><td class="num"></td><td class="num">'+money(totalGiving(yr))+'</td><td class="num">'+money(totalExpenses(yr))+'</td><td class="num">'+money(totalGiving(yr)-totalExpenses(yr))+'</td></tr></table></div>' +
+    '<p class="muted" style="margin-top:8px">Attendance '+yr+': '+(att.count ? att.count+' services recorded, average '+(Math.round(att.avg*10)/10) : 'no services recorded')+' · Givers: '+givers.length+' households · Gifts of $250+: '+flaggedGifts(yr).length+'</p>';
+}
+function printStatements(memberIds){
+  var yr = selectedYear('rYear');
+  var html = memberIds.map(function(id){ var m = memberById(id); return m ? statementHTML(m, yr) : ''; }).join('');
+  if(!html){ alert('No statements to print for '+yr+'.'); return; }
+  $('printArea').innerHTML = html;
+  window.print();
+}
+function printFinance(){
+  var yr = selectedYear('rYear');
+  var s = state.settings;
+  var ft = fundTotals(yr);
+  var rows = state.funds.map(function(f){
+    var t = ft[f.id] || {inn:0,out:0,bal:0}; var b = budgetFor(yr, f.id);
+    return '<tr><td>'+esc(f.name)+'</td><td style="text-align:right">'+(b?money(b):'—')+'</td><td style="text-align:right">'+money(t.inn)+'</td><td style="text-align:right">'+money(t.out)+'</td><td style="text-align:right">'+money(t.bal)+'</td></tr>';
+  }).join('');
+  var att = attendanceStats(yr);
+  $('printArea').innerHTML = '<div class="stmt"><div class="letterhead"><h1>'+esc(s.name||'Your Church')+'</h1><div>Finance Committee Summary — '+yr+'</div></div>' +
+    '<table><tr><th>Fund</th><th style="text-align:right">Budget</th><th style="text-align:right">Given</th><th style="text-align:right">Spent</th><th style="text-align:right">Balance</th></tr>' + rows +
+    '<tr class="total"><td>All funds</td><td></td><td style="text-align:right">'+money(totalGiving(yr))+'</td><td style="text-align:right">'+money(totalExpenses(yr))+'</td><td style="text-align:right">'+money(totalGiving(yr)-totalExpenses(yr))+'</td></tr></table>' +
+    '<div class="sumbox">Average attendance '+yr+': '+(att.count ? (Math.round(att.avg*10)/10)+' across '+att.count+' services' : 'no services recorded')+'<br>Giving households: '+giversForYear(yr).length+'<br>Single gifts of $250 or more: '+flaggedGifts(yr).length+' (all covered by year-end statements)</div></div>';
+  window.print();
+}
+
+/* ---------------- settings & backup ---------------- */
+function renderSettings(){
+  setVal('sName', state.settings.name); setVal('sAddr', state.settings.addr); setVal('sEin', state.settings.ein);
+  setVal('sSigner', state.settings.signer); setVal('sSignerTitle', state.settings.signerTitle); setVal('sStmtNote', state.settings.stmtNote);
+}
+function saveSettings(){
+  state.settings = { name: val('sName').trim(), addr: val('sAddr').trim(), ein: val('sEin').trim(),
+    signer: val('sSigner').trim(), signerTitle: val('sSignerTitle').trim(), stmtNote: val('sStmtNote').trim() };
+  save(); renderAll();
+}
+function exportBackup(){
+  var blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'parishbook-backup-' + todayISO() + '.json';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ try{ URL.revokeObjectURL(a.href); }catch(e){} }, 2000);
+}
+function importBackup(file){
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{
+      var s = JSON.parse(reader.result);
+      if(!s || !Array.isArray(s.members) || !Array.isArray(s.funds) || !Array.isArray(s.contributions) || !Array.isArray(s.expenses)) throw new Error('bad shape');
+      if(!s.settings) s.settings = {name:'',addr:'',ein:'',signer:'',signerTitle:'Treasurer',stmtNote:''};
+      if(!Array.isArray(s.attendance)) s.attendance = [];
+      if(!s.budgets) s.budgets = {};
+      state = s; save(); giftFormReset(); expFormReset(); memFormReset(); renderAll();
+      alert('Backup imported — ' + s.contributions.length + ' contributions, ' + s.members.length + ' members.');
+    }catch(e){ alert('That file could not be imported. It does not look like a ParishBook backup.'); }
+  };
+  reader.readAsText(file);
+}
+
+/* ---------------- render all ---------------- */
+function renderAll(){
+  renderDash(); renderGiving(); renderExpenses(); renderMembers(); renderFunds(); renderAttend(); renderReports(); renderSettings();
+}
+
+/* ---------------- events ---------------- */
+function bind(){
+  var tabs = document.querySelectorAll('#tabs button');
+  tabs.forEach(function(b){ b.addEventListener('click', function(){ showTab(b.getAttribute('data-tab')); }); });
+  $('gKind').addEventListener('change', function(){ $('gNoncashWrap').style.display = val('gKind')==='noncash' ? 'block' : 'none'; });
+  $('gSave').addEventListener('click', saveGift);
+  $('gCancel').addEventListener('click', function(){ giftFormReset(); renderGiving(); });
+  ['fYear','fFund','fMember','fText'].forEach(function(id){ $(id).addEventListener('change', renderGiving); $(id).addEventListener('input', renderGiving); });
+  $('eSave').addEventListener('click', saveExpense);
+  $('eCancel').addEventListener('click', function(){ expFormReset(); renderExpenses(); });
+  ['efYear','efFund'].forEach(function(id){ $(id).addEventListener('change', renderExpenses); });
+  $('mSave').addEventListener('click', saveMember);
+  $('mCancel').addEventListener('click', function(){ memFormReset(); renderMembers(); });
+  $('fdSave').addEventListener('click', function(){
+    var name = val('fdName').trim();
+    if(!name){ alert('Enter a fund name.'); return; }
+    state.funds.push({id: uid('f'), name:name, kind: val('fdKind'), active:true});
+    setVal('fdName',''); save(); renderAll();
+  });
+  $('bSave').addEventListener('click', saveBudgets);
+  $('bYear').addEventListener('change', renderFunds);
+  $('aSave').addEventListener('click', function(){
+    var date = val('aDate'), count = parseInt(val('aCount'), 10);
+    if(!date){ alert('Pick the service date.'); return; }
+    if(isNaN(count) || count<0){ alert('Enter an attendance count of 0 or more.'); return; }
+    var existing = null;
+    state.attendance.forEach(function(a){ if(a.date===date) existing = a; });
+    if(existing){ existing.count = count; existing.note = val('aNote').trim(); }
+    else state.attendance.push({id: uid('a'), date:date, count:count, note: val('aNote').trim()});
+    setVal('aCount',''); setVal('aNote',''); save(); renderAll();
+  });
+  $('rYear').addEventListener('change', function(){ renderReports(); renderDash(); });
+  $('rPreview').addEventListener('click', function(){
+    var id = val('rMember'); var yr = selectedYear('rYear');
+    if(!id){ alert('No giver selected for '+yr+'.'); return; }
+    var m = memberById(id);
+    $('stmtPreview').innerHTML = '<div class="card" style="background:#fffef8"><p class="muted">Preview — prints exactly like this, one giver per page:</p>' + statementHTML(m, yr) + '</div>';
+  });
+  $('rPrintOne').addEventListener('click', function(){ var id = val('rMember'); if(id) printStatements([id]); else alert('No giver selected.'); });
+  $('rPrintAll').addEventListener('click', function(){
+    var yr = selectedYear('rYear');
+    var ids = giversForYear(yr).map(function(m){ return m.id; });
+    if(!ids.length){ alert('No givers with cash gifts in '+yr+'.'); return; }
+    printStatements(ids);
+  });
+  $('rPrintFin').addEventListener('click', printFinance);
+  $('sSave').addEventListener('click', saveSettings);
+  $('xExport').addEventListener('click', exportBackup);
+  $('xImportBtn').addEventListener('click', function(){ $('xImport').click(); });
+  $('xImport').addEventListener('change', function(){ if(this.files && this.files[0]) importBackup(this.files[0]); this.value=''; });
+  $('xDemo').addEventListener('click', function(){
+    if(confirm('Replace ALL current records with the sample data? Export a backup first if you need your real records.')){ var lg = state.legal; state = seedState(); if(lg) state.legal = lg; save(); giftFormReset(); expFormReset(); memFormReset(); renderAll(); }
+  });
+  $('xClear').addEventListener('click', function(){
+    if(confirm('Clear the sample data and start with an empty book? Your settings are kept; members, gifts, expenses, attendance and budgets are emptied.')){ var keep = state.settings; var lg2 = state.legal; state = emptyState(); state.settings = keep; if(lg2) state.legal = lg2; save(); giftFormReset(); expFormReset(); memFormReset(); renderAll(); }
+  });
+  document.addEventListener('click', function(ev){
+    var t = ev.target;
+    function act(attr, fn){ var id = t.getAttribute && t.getAttribute(attr); if(id){ fn(id); return true; } return false; }
+    if(act('data-del-gift', function(id){ if(confirm('Delete this contribution record?')){ state.contributions = state.contributions.filter(function(g){ return g.id!==id; }); save(); renderAll(); } })) return;
+    if(act('data-edit-gift', function(id){
+      var g = null; state.contributions.forEach(function(x){ if(x.id===id) g=x; }); if(!g) return;
+      editGiftId = id; fillMemberSelect('gMember', null, true); fillFundSelect('gFund', null, true);
+      setVal('gDate', g.date); setVal('gMember', g.member); setVal('gFund', g.fund); setVal('gKind', g.kind);
+      setVal('gAmount', g.kind==='noncash' ? '' : g.amount); setVal('gMethod', g.method); setVal('gCheck', g.check); setVal('gDesc', g.desc); setVal('gNote', g.note);
+      $('gNoncashWrap').style.display = g.kind==='noncash' ? 'block' : 'none';
+      $('gSave').textContent='Save changes'; $('gCancel').style.display='inline-block'; $('giftFormTitle').textContent='Edit contribution';
+      showTab('giving'); window.scrollTo(0,0);
+    })) return;
+    if(act('data-del-exp', function(id){ if(confirm('Delete this expense record?')){ state.expenses = state.expenses.filter(function(e){ return e.id!==id; }); save(); renderAll(); } })) return;
+    if(act('data-edit-exp', function(id){
+      var e = null; state.expenses.forEach(function(x){ if(x.id===id) e=x; }); if(!e) return;
+      editExpId = id; fillFundSelect('eFund', null, true);
+      setVal('eDate', e.date); setVal('eFund', e.fund); setVal('eCat', e.cat); setVal('eAmount', e.amount); setVal('ePayee', e.payee); setVal('eNote', e.note);
+      $('eSave').textContent='Save changes'; $('eCancel').style.display='inline-block'; $('expFormTitle').textContent='Edit expense';
+      showTab('expenses'); window.scrollTo(0,0);
+    })) return;
+    if(act('data-del-mem', function(id){
+      var n = state.contributions.filter(function(g){ return g.member===id; }).length;
+      if(n){ alert('This member has '+n+' contribution record(s) — they can\'t be deleted without orphaning the records. Edit them and leave the record in place, or delete the contributions first.'); return; }
+      if(confirm('Delete this member from the directory?')){ state.members = state.members.filter(function(m){ return m.id!==id; }); save(); renderAll(); }
+    })) return;
+    if(act('data-edit-mem', function(id){
+      var m = memberById(id); if(!m) return;
+      editMemId = id;
+      setVal('mName', m.name); setVal('mEnv', m.env); setVal('mSince', m.since); setVal('mAddr', m.addr); setVal('mEmail', m.email); setVal('mPhone', m.phone); setVal('mNotes', m.notes);
+      $('mSave').textContent='Save changes'; $('mCancel').style.display='inline-block'; $('memFormTitle').textContent='Edit member';
+      window.scrollTo(0,0);
+    })) return;
+    if(act('data-toggle-fund', function(id){ var f = fundById(id); if(f){ f.active = !f.active; save(); renderAll(); } })) return;
+    if(act('data-del-fund', function(id){
+      var n = state.contributions.filter(function(g){ return g.fund===id; }).length + state.expenses.filter(function(e){ return e.fund===id; }).length;
+      if(n){ alert('This fund has '+n+' record(s) — deactivate it instead of deleting.'); return; }
+      if(confirm('Delete this fund?')){ state.funds = state.funds.filter(function(f){ return f.id!==id; }); save(); renderAll(); }
+    })) return;
+    if(act('data-del-att', function(id){ state.attendance = state.attendance.filter(function(a){ return a.id!==id; }); save(); renderAll(); })) return;
+  });
+}
+
+/* ---------------- init ---------------- */
+load();
+bind();
+setVal('gDate', todayISO()); setVal('eDate', todayISO()); setVal('aDate', todayISO());
+renderAll();
+
+/* exposed for automated QA */
+window.PB = { get state(){ return state; }, set state(s){ state = s; },
+  fundTotals: fundTotals, totalGiving: totalGiving, totalExpenses: totalExpenses,
+  memberYearGifts: memberYearGifts, memberYearTotal: memberYearTotal, flaggedGifts: flaggedGifts,
+  attendanceStats: attendanceStats, budgetFor: budgetFor, statementHTML: statementHTML,
+  giversForYear: giversForYear, seedState: seedState, emptyState: emptyState, save: save, load: load, renderAll: renderAll,
+  money: money, cents: cents, giftCents: giftCents };
+
+/* ================= Legal — Terms of Use acceptance (catalog pattern v1.0) ================= */
+var TERMS_VERSION = "1.0";
+var LEGAL_APP_NAME = "ParishBook";
+var LEGAL_HAS_DISCLAIMER = false;
+var LEGAL_TERMS_HTML = "<h3>Terms of Use \u2014 White Wolf Digital Apps</h3><p><b>Version 1.0 (DRAFT \u2014 pending attorney review)</b></p><p><b>Seller: White Wolf Tree Service LLC, selling digital products under the name \"White Wolf Digital\"</b></p><p><b>Contact: whitewolfoklahoma@gmail.com</b></p><h4>1. What you're buying</h4><p>Our apps (including ForgeFit AI, ForgeKitchen, TreeBid Pro, SnowBid,</p><p>WashPrice Pro, RoofSquares, JobProfit Tracker, PastureLedger, and the other</p><p>titles sold under White Wolf Digital) are single-file software tools. When</p><p>you buy one, you are buying a <b>license to use the file</b>, not ownership of</p><p>the software itself.</p><h4>2. Your license</h4><ul><li>You may use the app for your own personal or business work.</li><li>You may open it on your own devices (phone, tablet, computer) and move your</li></ul><p>  own data between them using the app's built-in backup/export tools.</p><ul><li>You may <b>not</b> resell, redistribute, give away, upload, or share the app</li></ul><p>  file (or a copy of it) with anyone else \u2014 including posting it online,</p><p>  bundling it with other products, or selling access to it.</p><ul><li>You may <b>not</b> claim the app as your own work, remove its branding or</li></ul><p>  notices, or use it to build a competing product for resale.</p><ul><li>One purchase = one buyer. A business purchase covers the buyer and their</li></ul><p>  own employees using it for that business's work; it does not cover other</p><p>  businesses.</p><h4>3. Your data stays yours \u2014 and stays on your device</h4><ul><li>The current versions of our apps run <b>entirely on your device</b>. They have</li></ul><p>  no accounts, no sign-in, no analytics, and they collect, transmit, and store</p><p>  <b>none</b> of your information on any server. We never see your data.</p><ul><li>Your records are stored in your browser/app storage on your device. **You</li></ul><p>  are responsible for backing them up** using the app's export tools. If you</p><p>  clear your browser data, lose your device, or uninstall the app, your</p><p>  records may be permanently lost, and we cannot recover them \u2014 we never had</p><p>  a copy.</p><ul><li>Files you export (backups, quotes, PDFs) are under your control. Where you</li></ul><p>  store or send them is up to you.</p><h4>4. Estimates are tools, not guarantees</h4><p>Every number our apps produce \u2014 bids, prices, costs, calorie targets,</p><p>projections, schedules, totals \u2014 is an **estimate generated from the</p><p>information you enter and the settings you choose**. Outputs are aids for</p><p>your own judgment, not guarantees of price, profit, outcome, or result. You</p><p>are responsible for checking any output before relying on it (see also the</p><p>disclaimer that applies to your app: Health Disclaimer for fitness/nutrition</p><p>apps, Estimator Disclaimer for contractor tools). If an input is wrong, the</p><p>output will be wrong.</p><h4>5. Acceptable use</h4><p>Don't use the apps to break the law, infringe anyone's rights, or</p><p>misrepresent quotes, invoices, or records to your own customers. For the</p><p>fitness apps, the guardrails in the app (healthy-rate limits, calorie floor)</p><p>are part of the product \u2014 don't treat the app as a way around them.</p><h4>6. Provided \"as is\"</h4><p>The apps are provided **\"as is\" and \"as available,\" without warranties of</p><p>any kind**, express or implied \u2014 including merchantability, fitness for a</p><p>particular purpose, accuracy of calculations, and uninterrupted or</p><p>error-free operation \u2014 to the maximum extent allowed by law. Software has</p><p>bugs; browsers change; we work to fix problems but do not promise any app is</p><p>error-free or will work on every device or browser forever.</p><h4>7. Limitation of liability</h4><p>To the maximum extent allowed by law:</p><ul><li>We are **not liable for indirect, incidental, special, or consequential</li></ul><p>  damages** \u2014 including lost profits, lost or mispriced jobs, lost data, or</p><p>  business interruption \u2014 arising from use of the apps.</p><ul><li>Our total liability for any claim connected to an app is limited to the</li></ul><p>  <b>amount you paid for that app</b>.</p><ul><li>Nothing in these terms limits liability that cannot legally be limited.</li></ul><h4>8. Refunds</h4><p>Refunds are handled **by the storefront you bought from, under that</p><p>storefront's policy** \u2014 Gumroad's refund policy for Gumroad purchases, and</p><p>Google Play's refund policy for Play purchases. These terms do not add to,</p><p>replace, or override the storefront's refund rules. If a file is defective</p><p>and won't open, contact us at whitewolfoklahoma@gmail.com and we'll fix or</p><p>replace the file.</p><h4>9. Updates and changes to these terms</h4><ul><li>We may release updated versions of an app. Updates may add, change, or</li></ul><p>  remove features.</p><ul><li>We may update these terms. The version you agreed to is recorded in the</li></ul><p>  app (version number and date) at first-run acceptance. If terms change,</p><p>  the app may ask you to accept the new version once on next open. Updated</p><p>  terms apply going forward, not retroactively.</p><ul><li>If you don't agree to an updated version of the terms, stop using the app.</li></ul><h4>10. Governing law</h4><p>These terms are governed by the laws of the <b>State of Oklahoma</b>, USA.</p><p>(Attorney to confirm governing law and venue before publication.)</p><h4>11. Contact</h4><p>White Wolf Tree Service LLC (White Wolf Digital) \u2014</p><p>whitewolfoklahoma@gmail.com.</p><h4>CONNECTED FEATURES \u2014 takes effect only when these features ship</h4><p>*The sections below apply only to future connected features (device sync via</p><p>Health Connect, AI voice logging, and the AI Goal Preview in ForgeFit). They</p><p>do not apply to the current offline versions, which never transmit data.*</p><ul><li><b>Opt-in only.</b> Connected features are off by default. Each one asks for</li></ul><p>  your separate, explicit consent \u2014 on its own consent screen, in plain</p><p>  language \u2014 before anything leaves your device. Declining never disables</p><p>  the app's offline features.</p><ul><li><b>What gets sent.</b> Only what the consent screen names, only when you use</li></ul><p>  the feature: for example, a meal description (text, or audio only if cloud</p><p>  transcription is on) for AI voice logging, or the single photo you choose</p><p>  for an AI Goal Preview.</p><ul><li><b>No retention by us.</b> Our relay service passes your request to the named</li></ul><p>  AI provider and keeps nothing \u2014 no copies of your photos, audio,</p><p>  transcripts, or entries are stored on our servers. Provider handling is</p><p>  described on the consent screen and in the Privacy Policy.</p><ul><li><b>Health data stays on the device.</b> Device sync (Health Connect) reads</li></ul><p>  your health data on your phone and stores it in the app on your phone. It</p><p>  is not uploaded to us.</p><ul><li><b>Allowances.</b> Some connected features run on third-party AI services we</li></ul><p>  pay for per use, so they may include a monthly allowance described in the</p><p>  app (for example, a set number of AI previews or voice entries per month),</p><p>  with optional additional credits. Allowances and pricing will be shown in</p><p>  the app before you use the feature; they are not a subscription unless the</p><p>  app says so in plain words.</p><ul><li><b>Permissions.</b> Connected features may request device permissions (such</li></ul><p>  as Health Connect access or the microphone) at the moment you first use</p><p>  them. You can revoke permissions any time in your device settings; the</p><p>  related feature will simply stop working.</p>";
+var LEGAL_DISCLAIMER_HTML = "<h3>Estimator Disclaimer \u2014 Contractor &amp; Trade Tools</h3><p>**Applies to: TreeBid Pro, SnowBid, WashPrice Pro, RoofSquares, JobProfit</p><p>Tracker, FieldForms Toolkit, PaintPro, FenceDeck, MarketMaker, and the other</p><p>estimating/pricing tools sold under White Wolf Digital \u2014 including bundles</p><p>that contain them.**</p><h4>Estimating aids, not finished quotes</h4><ul><li>These apps are <b>estimating and record-keeping aids</b>. Every bid, price,</li></ul><p>  cost, measurement, and total they produce is an **estimate based on the</p><p>  information and rates you enter**.</p><ul><li>**You \u2014 the business owner \u2014 are responsible for verifying everything</li></ul><p>  before you quote a customer:** measurements and quantities, site</p><p>  conditions, your current material and labor costs, your rates and margins,</p><p>  taxes, permit and license requirements, disposal rules, and any contract</p><p>  terms.</p><ul><li>Default rates, presets, and sample data included in the apps are starting</li></ul><p>  points only. They are not market prices, not industry standards, and not</p><p>  a recommendation of what you should charge.</p><ul><li>A saved quote keeps the prices in effect when you created it (price</li></ul><p>  snapshot). Changing your presets later does not change saved quotes \u2014</p><p>  and a saved quote is still your responsibility to review before sending.</p><h4>Specific tools</h4><ul><li><b>TreeBid Pro:</b> tree work is dangerous and site-specific. Difficulty</li></ul><p>  factors and presets cannot see the actual tree, lean, rot, targets, or</p><p>  access. Inspect every job in person before final pricing. The \"Invoice</p><p>  with Wave\" feature is an open-and-paste handoff \u2014 TreeBid does not</p><p>  connect to Wave, and the invoice you send from Wave is yours.</p><ul><li><b>RoofSquares / measurement tools:</b> confirm roof measurements and pitch</li></ul><p>  in person or by your usual method before ordering materials.</p><ul><li><b>SnowBid / seasonal tools:</b> route times, snowfall amounts, and service</li></ul><p>  pricing vary by storm and site; seasonal contracts are your agreement</p><p>  with your customer, on your terms.</p><ul><li><b>JobProfit Tracker:</b> profit figures depend on the costs you enter.</li></ul><p>  The app is not accounting or tax software and does not replace your</p><p>  bookkeeper or accountant.</p><h4>Bottom line</h4><p>If an output and your judgment disagree, trust your judgment \u2014 then fix the</p><p>input. We are not responsible for jobs won, lost, or mispriced based on app</p><p>outputs, within the limits of the Terms of Use.</p>";
+(function(){
+  var lst = document.createElement("style");
+  lst.textContent = "@media print{ #legalOverlay{ display:none !important; } }";
+  document.head.appendChild(lst);
+})();
+function sanitizeLegal(v){
+  if(!v || typeof v !== "object") return null;
+  if(typeof v.termsVersion !== "string" || typeof v.acceptedDate !== "string") return null;
+  return { termsVersion: v.termsVersion.slice(0, 10), acceptedDate: v.acceptedDate.slice(0, 40), disclaimerShown: !!v.disclaimerShown };
+}
+function legalRecord(){
+  try{ var s = state; return (s && s.legal) ? sanitizeLegal(s.legal) : null; }catch(e){ return null; }
+}
+function legalVersionCmp(a, b){
+  var pa = String(a).split("."), pb = String(b).split(".");
+  for(var i = 0; i < 3; i++){ var d = (parseInt(pa[i], 10) || 0) - (parseInt(pb[i], 10) || 0); if(d) return d; }
+  return 0;
+}
+function legalAcceptLine(){
+  var rec = legalRecord();
+  if(rec && rec.acceptedDate) return "You agreed to Terms v" + rec.termsVersion + " on " + rec.acceptedDate.slice(0, 10) + ".";
+  return "No Terms acceptance is recorded on this device yet \u2014 the current Terms will be shown for your agreement.";
+}
+function legalSectionHTML(){
+  var h = '<div style="border-top:2px solid rgba(127,127,127,.35);margin-top:20px;padding-top:14px;">'
+    + '<h2>Legal</h2>'
+    + '<p>' + legalAcceptLine() + '</p>'
+    + '<h3>Terms of Use (v' + TERMS_VERSION + ')</h3>'
+    + '<div style="max-height:340px;overflow-y:auto;border:1px solid rgba(127,127,127,.4);border-radius:8px;padding:10px 14px;font-size:14px;line-height:1.55;">' + LEGAL_TERMS_HTML + '</div>';
+  if(LEGAL_HAS_DISCLAIMER){
+    h += '<h3>Estimator Disclaimer</h3>'
+      + '<div style="max-height:260px;overflow-y:auto;border:1px solid rgba(127,127,127,.4);border-radius:8px;padding:10px 14px;font-size:14px;line-height:1.55;">' + LEGAL_DISCLAIMER_HTML + '</div>';
+  }
+  h += '<h3>Privacy</h3>'
+    + '<p>This app collects no data. It has no accounts, no sign-in, no analytics, and no server \u2014 everything you enter is stored only on this device, in this browser\u2019s storage, and nothing is transmitted anywhere. Files you export (backups, quotes, prints) are under your control. You are responsible for backing up your records with the app\u2019s export tools.</p>'
+    + '<p>Sold by White Wolf Tree Service LLC (White Wolf Digital) \u2014 whitewolfoklahoma@gmail.com</p>'
+    + '</div>';
+  return h;
+}
+function legalFillSection(){
+  var el = document.getElementById("legalSection");
+  if(!el) return;
+  var sig = legalAcceptLine();
+  if(el.getAttribute("data-legal-filled") === sig) return;
+  el.innerHTML = legalSectionHTML(); el.setAttribute("data-legal-filled", sig);
+}
+function legalRefreshSection(){
+  var el = document.getElementById("legalSection");
+  if(el){ el.innerHTML = legalSectionHTML(); el.setAttribute("data-legal-filled", legalAcceptLine()); }
+}
+function legalShowOverlay(isUpdate){
+  if(document.getElementById("legalOverlay")) return;
+  var ov = document.createElement("div");
+  ov.id = "legalOverlay";
+  ov.setAttribute("style", "position:fixed;inset:0;z-index:99999;background:rgba(8,10,14,.74);overflow-y:auto;padding:20px 12px;display:flex;align-items:flex-start;justify-content:center;");
+  var discBtn = LEGAL_HAS_DISCLAIMER ? '<button type="button" id="legalReadDisc" style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid #9aa4b2;background:#ffffff;color:#1c2733;font-size:15px;cursor:pointer;">Read the Estimator Disclaimer</button>' : '';
+  var checkLabel = LEGAL_HAS_DISCLAIMER ? "I have read the disclaimer and I agree to the Terms of Use" : "I have read and I agree to the Terms of Use";
+  ov.innerHTML = '<div style="background:#ffffff;color:#1c2733;max-width:560px;width:100%;border-radius:14px;padding:22px 20px;box-shadow:0 18px 50px rgba(0,0,0,.45);font-size:15px;line-height:1.55;">'
+    + '<h2 style="margin:0 0 6px;font-size:21px;">' + LEGAL_APP_NAME + ' \u2014 Terms of Use</h2>'
+    + (isUpdate ? '<p style="background:#fdf3d7;border:1px solid #e4cf8a;border-radius:8px;padding:8px 10px;"><b>Our terms were updated (v' + TERMS_VERSION + ').</b></p>' : '')
+    + '<p style="font-size:16px;"><b>Your data stays on your device.</b><br><b>Estimates are aids, not guarantees.</b><br><b>You\'re responsible for checking outputs before you rely on them.</b></p>'
+    + '<p>The full Terms' + (LEGAL_HAS_DISCLAIMER ? ' and Disclaimer are' : ' are') + ' one tap away, now and any time in Settings \u2192 Legal.</p>'
+    + '<div id="legalReader" style="display:none;max-height:44vh;overflow-y:auto;border:1px solid #d5dbe3;border-radius:10px;padding:10px 14px;margin:10px 0;font-size:14px;"></div>'
+    + '<p style="display:flex;gap:8px;flex-wrap:wrap;"><button type="button" id="legalReadTerms" style="min-height:44px;padding:10px 14px;border-radius:10px;border:1px solid #9aa4b2;background:#ffffff;color:#1c2733;font-size:15px;cursor:pointer;">Read the full Terms</button>' + discBtn + '</p>'
+    + '<label style="display:flex;gap:10px;align-items:flex-start;margin:12px 0;cursor:pointer;"><input type="checkbox" id="legalCheck" style="width:22px;height:22px;min-width:22px;margin-top:1px;cursor:pointer;"><span>' + checkLabel + '</span></label>'
+    + '<button type="button" id="legalAgree" disabled style="min-height:52px;width:100%;border:0;border-radius:10px;background:#1f5fa8;color:#ffffff;font-size:17px;font-weight:700;cursor:pointer;opacity:.55;">I Agree</button>'
+    + '<p style="font-size:13px;color:#5a6675;margin-bottom:0;">Your records stay loaded behind this screen and are never deleted or locked, whether or not you agree now.</p>'
+    + '</div>';
+  document.body.appendChild(ov);
+  var reader = ov.querySelector("#legalReader");
+  var showing = "";
+  function toggleReader(kind){
+    if(showing === kind){ reader.style.display = "none"; showing = ""; return; }
+    reader.innerHTML = kind === "terms" ? LEGAL_TERMS_HTML : LEGAL_DISCLAIMER_HTML;
+    reader.style.display = "block"; showing = kind;
+    reader.scrollTop = 0;
+  }
+  ov.querySelector("#legalReadTerms").addEventListener("click", function(){ toggleReader("terms"); });
+  var db = ov.querySelector("#legalReadDisc");
+  if(db) db.addEventListener("click", function(){ toggleReader("disc"); });
+  var legalChk = ov.querySelector("#legalCheck");
+  var legalAgreeBtn = ov.querySelector("#legalAgree");
+  legalChk.addEventListener("change", function(){ legalAgreeBtn.disabled = !legalChk.checked; legalAgreeBtn.style.opacity = legalChk.checked ? "1" : ".55"; });
+  legalAgreeBtn.addEventListener("click", function(){
+    if(!legalChk.checked) return;
+    try{ state.legal = { termsVersion: TERMS_VERSION, acceptedDate: new Date().toISOString(), disclaimerShown: LEGAL_HAS_DISCLAIMER }; save(); }catch(e){}
+    if(ov.parentNode) ov.parentNode.removeChild(ov);
+    legalRefreshSection();
+  });
+}
+function legalInit(){
+  legalFillSection();
+  var rec = legalRecord();
+  if(rec && legalVersionCmp(rec.termsVersion, TERMS_VERSION) >= 0) return;
+  legalShowOverlay(!!rec);
+}
+if(typeof MutationObserver !== "undefined"){
+  var legalObs = new MutationObserver(function(){ legalFillSection(); });
+  legalObs.observe(document.documentElement, { childList: true, subtree: true });
+}
+if(document.readyState === "loading") document.addEventListener("DOMContentLoaded", function(){ setTimeout(legalInit, 30); });
+else setTimeout(legalInit, 30);
+
+</script>
+</body>
+</html>
